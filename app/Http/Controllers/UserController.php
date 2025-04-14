@@ -38,10 +38,14 @@ class UserController extends Controller
         // Criptografa a senha
         $validadeData['password'] = bcrypt($validadeData['password']);
 
-        // Inicializa a variável $user
+        // Instancia um novo usuário.
+        // Será usado para receber o usuário criado.
         $user = new User();
 
         try {
+            // Cria a variável para armazenar o nome da imagem
+            $imageName = null;
+
             // Verifica se o arquivo de imagem foi enviado
             if ($request->file('image')) {
                 // Gera um nome único para a imagem
@@ -51,7 +55,7 @@ class UserController extends Controller
                 $validadeData['profile_picture'] = $this->uploadImage($request->file('image'), $imageName);
             }
 
-            // Cria o usuário e recupera seu valor.
+            // Cria o usuário com os dados da requisição.
             $user = User::create($validadeData);
 
             // Cria o token de acesso com as habilidades especificadas. Duração de uma semana
@@ -64,9 +68,19 @@ class UserController extends Controller
                 'data' => $user,
             ], 201);
         } catch (Exception $e) {
-            // Registra o erro no log
-            // Se existir, remove o user e a imagem do disco privado
-            return $this->registerError($e->getMessage(), $user, $validadeData);
+            // Verifica se o nome da imagem foi criado
+            if ($imageName) {
+                // Previne que seja removida, caso aramzenada no disco privado.
+                Storage::disk('users')->delete("users/$imageName");
+            }
+
+            // Remove o usuário do banco de dados, se existir
+            if ($user) {
+                $user->delete(); // Deleta o usuário
+            }
+
+            // Registra o erro no log e retorna um JsonResponse com erro 500.
+            return $this->registerError('Erro na rota POST/users: ' . $e->getMessage());
         }
     }
 
@@ -97,14 +111,8 @@ class UserController extends Controller
                 'data' => new UserResource($user),
             ], 200);
         } catch (Exception $e) {
-            // Registra o erro no log
-            Log::channel('api_errors')->error('Erro na rota Post /users: ' . $e->getMessage());
-
-            // Retorna uma resposta de erro em caso de falha
-            return response()->json([
-                'message' => 'Internal server error.',
-                'error' => 'Ocorreu um erro ao processar sua solicitação.'
-            ], 500);
+            // Registra o erro no log e retorna um JsonResponse com erro 500.
+            return $this->registerError('Erro na rota GET/users/{id}: ' . $e->getMessage());
         }
     }
 
@@ -130,9 +138,6 @@ class UserController extends Controller
             'abilities' => 'required|array',
             'image' => 'image|mimes:jpeg,png,jpg,gif',
         ]);
-
-        // Inicializa a variável $user
-        $user = new User();
 
         try {
             // Verifica se o usuário existe e recupera-o
@@ -169,19 +174,18 @@ class UserController extends Controller
                 'data' => new UserResource($user),
             ], 200);
         } catch (Exception $e) {
-            // Registra o erro no log
-            // Se existir, remove o user e a imagem do disco privado
-            return $this->registerError($e->getMessage(), $user, $validadeData);
+            // Registra o erro no log e retorna um JsonResponse com erro 500.
+            return $this->registerError('Erro na rota PUT/users: ' . $e->getMessage());
         }
     }
 
     /**
-     * Faz upload de imagem, recebido da requisições POST.
-     * O nome do arquivo é gerado com base no timestamp atual e na extensão original do arquivo.
-     * A imagem é armazenada na pasta privada 'photo' dentro do disco 'photo'.
+     * Faz upload de imagem no disco.
+     * Caso não receba o nome do arquivo, é gerado com base no timestamp.
+     * A imagem é armazenada na pasta privada, do disco 'users'.
      * O nome do arquivo é retornado.
      * @param ?string $imageName
-     * @param \Illuminate\Http\UploadedFile $image
+     * @param ?\Illuminate\Http\UploadedFile $image
      * @return string
      */
     private function uploadImage(UploadedFile $image, ?string $imageName): string
@@ -192,7 +196,7 @@ class UserController extends Controller
             $imageName = time() . '.' . $image->getClientOriginalExtension();
         }
 
-        // Armazena a imagem no disco privado 'photo'
+        // Armazena a imagem no disco privado 'users'
         // Caso exista um arquivo com o mesmo nome, ele será sobrescrito
         $image->storeAs('users', $imageName, 'users');
 
@@ -201,38 +205,15 @@ class UserController extends Controller
     }
 
     /**
-     * Remove a imagem do disco privado -> 'photo'.
-     * O nome do arquivo é passado como parâmetro.
-     * @param string $imageName
-     * @return bool
-     */
-    private function deleteImage(string $imageName): bool
-    {
-        return Storage::disk('photo')->delete("photo/$imageName");
-    }
-
-    /**
-     * Registra um erro no log e remove o usuário do banco de dados.
-     * Se existir, remove a imagem do disco privado.
+     * Registra um erro no log/api_errors.log.
+     * Retorna uma resposta de erro, cod. 500, em json.
      * @param string $message
-     * @param \App\Models\User $user
-     * @param array $validadeData
-     * @return JsonResponse|mixed
+     * @return JsonResponse
      */
-    private function registerError(string $message, ?User $user, array $validadeData): JsonResponse
+    private function registerError(string $message): JsonResponse
     {
         // Registra o erro no log
-        Log::channel('api_errors')->error("Erro na rota Post /users: $message");
-
-        // Remove o usuário do banco de dados, se existir
-        if (isset($user)) {
-            $user->delete();
-        }
-
-        // Remove a imagem do disco privado, se existir
-        if (isset($validadeData['profile_picture'])) {
-            $this->deleteImage($validadeData['profile_picture']);
-        }
+        Log::channel('api_errors')->error($message);
 
         // Retorna uma resposta de erro em caso de falha
         return response()->json([
