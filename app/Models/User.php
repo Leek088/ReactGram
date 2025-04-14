@@ -23,7 +23,7 @@ class User extends Model
     protected function casts(): array
     {
         return [
-            'abilities' => 'array',
+            // 'abilities' => 'array',
         ];
     }
 }
