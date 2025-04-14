@@ -21,4 +21,6 @@ Route::controller(PostController::class)->group(function (): void {
     Route::get('/posts/{id}', 'show')->middleware('auth:sanctum');
     Route::post('/posts', 'store')->middleware('auth:sanctum');
     Route::put('/posts/{id}', 'update')->middleware('auth:sanctum');
+    Route::put('/posts/{id}', 'update')->middleware('auth:sanctum');
+
 });
