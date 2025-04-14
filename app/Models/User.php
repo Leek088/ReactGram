@@ -18,12 +18,13 @@ class User extends Model
         'email',
         'password',
         'abilities',
+        'profile_picture',
     ];
 
     protected function casts(): array
     {
         return [
-            // 'abilities' => 'array',
+            'abilities' => 'array',
         ];
     }
 }
