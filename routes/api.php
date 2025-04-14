@@ -11,9 +11,7 @@ Route::controller(AuthController::class)->group(function (): void {
 });
 
 Route::controller(UserController::class)->group(function (): void {
-    Route::get('/users', 'index')->middleware('auth:sanctum');
     Route::get('/users/{id}', 'show')->middleware('auth:sanctum');
     Route::post('/users', 'store')->middleware('auth:sanctum');
     Route::put('/users/{id}', 'update')->middleware('auth:sanctum');
-    Route::delete('/users/{id}', 'destroy')->middleware('auth:sanctum');
 });
