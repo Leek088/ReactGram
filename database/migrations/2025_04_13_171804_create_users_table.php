@@ -16,7 +16,6 @@ return new class extends Migration {
             $table->string('email')->unique();
             $table->string('password');
             $table->string('profile_picture')->nullable();
-            $table->string('bio')->nullable();
             $table->string('abilities');
             $table->timestamps();
             $table->softDeletes();

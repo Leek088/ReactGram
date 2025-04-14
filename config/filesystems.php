@@ -30,7 +30,12 @@ return [
 
     'disks' => [
 
-        'photo' => [
+        'photos' => [
+            'driver' => 'local',
+            'root' => storage_path('app/private/'),
+        ],
+
+        'users' => [
             'driver' => 'local',
             'root' => storage_path('app/private/'),
         ],

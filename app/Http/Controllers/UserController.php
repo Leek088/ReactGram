@@ -194,7 +194,7 @@ class UserController extends Controller
 
         // Armazena a imagem no disco privado 'photo'
         // Caso exista um arquivo com o mesmo nome, ele será sobrescrito
-        $image->storeAs('photo', $imageName, 'photo');
+        $image->storeAs('users', $imageName, 'users');
 
         // Retorna o nome do arquivo
         return $imageName;

@@ -10,12 +10,13 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('photos', function (Blueprint $table): void {
+        Schema::create('posts', function (Blueprint $table): void {
             $table->id();
             $table->string('image_path');
-            $table->string('title')->nullable();
+            $table->string('title');
             $table->string('likes')->nullable();
             $table->string('comments')->nullable();
+            $table->string('bio');
             $table->foreignId('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
@@ -27,6 +28,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('photos');
+        Schema::dropIfExists('posts');
     }
 };
