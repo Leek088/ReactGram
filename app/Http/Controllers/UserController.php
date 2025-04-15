@@ -65,7 +65,7 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'User created successfully',
                 'token' => $token,
-                'data' => $user,
+                'data' => new UserResource($user),
             ], 201);
         } catch (Exception $e) {
             // Verifica se o nome da imagem foi criado
