@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
 use Exception;
 use App\Models\User;
@@ -176,6 +177,44 @@ class UserController extends Controller
         } catch (Exception $e) {
             // Registra o erro no log e retorna um JsonResponse com erro 500.
             return $this->registerError('Erro na rota PUT/users: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Recupera os posts de um usuário específico.
+     * O usuário é identificado pelo ID passado como parâmetro.
+     * Se o usuário não existir, uma resposta em json, cod. 404 é retornada.
+     * Em caso de erro, uma mensagem de erro é registrada no log e uma resposta de erro é retornada.
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function getUserPosts(string $id): JsonResponse
+    {
+        try {
+            // Verifica se o usuário existe
+            $user = User::find($id);
+
+            // Se o usuário não existir, retorna uma resposta de erro
+            if (!$user) {
+                return response()->json([
+                    'message' => 'User not found',
+                ], 404);
+            }
+
+            // Recupera os posts do usuário
+            $posts = $user->posts()->get();
+
+            // Retorna os dados do usuário e os posts
+            return response()->json([
+                'message' => 'User posts retrieved successfully',
+                'data' => [
+                    'user' => new UserResource($user),
+                    'posts' => PostResource::collection($posts),
+                ],
+            ], 200);
+        } catch (Exception $e) {
+            // Registra o erro no log e retorna um JsonResponse com erro 500.
+            return $this->registerError('Erro na rota GET/users/{id}/posts: ' . $e->getMessage());
         }
     }
 

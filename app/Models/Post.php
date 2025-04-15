@@ -15,6 +15,7 @@ class Post extends Model
         'title',
         'likes',
         'comments',
+        'bio',
         'user_id',
     ];
 
