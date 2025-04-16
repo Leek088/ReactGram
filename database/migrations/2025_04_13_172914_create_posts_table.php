@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->id();
             $table->string('post_image');
             $table->string('title');
-            $table->string('likes')->nullable();
-            $table->string('comments')->nullable();
+            $table->text('likes')->nullable();
+            $table->text('comments')->nullable();
             $table->string('bio');
             $table->foreignId('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

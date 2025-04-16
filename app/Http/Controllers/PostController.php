@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\UploadedFile;
+use Str;
 
 class PostController extends Controller
 {
@@ -213,8 +214,8 @@ class PostController extends Controller
     }
 
     /**
-     * Adiciona um like a um post específico.
-     * A lógica de like é implementada: Curtir/Descurtir.
+     * Adiciona like ao post específico.
+     * A lógica de like é implementada sendo Curtir e Descurtir.
      * Em caso de erro, é registrado no log e retorna status 500 em json.
      * @param string $id
      * @return JsonResponse
@@ -232,11 +233,11 @@ class PostController extends Controller
                 ], 404);
             }
 
-            // Recupera os likes do post
-            $likes = $post->likes ?: [];
+            // Recupera o array dos likes do post
+            $likes = $post->likes ?? []; // Caso não exista likes, é inicializado como vazio
 
             // Recupeara o id do usuário que está logado
-            $userId = auth()->id();
+            $userId = auth()->user()->id;
 
             // Implementa a lógica de like: Curtir/Descurtir
             if (in_array($userId, $likes)) {
@@ -247,7 +248,7 @@ class PostController extends Controller
                 $likes[] = $userId;
             }
 
-            // Atualiza a propriedade likes
+            // Atualiza o post com os likes atuais
             $post->likes = $likes;
 
             // Salva as mudanças no banco
@@ -260,7 +261,96 @@ class PostController extends Controller
             ], 200);
         } catch (Exception $e) {
             // Registra o erro no log e retorna um JsonResponse com erro 500.
-            return $this->registerError('Erro na rota POST/posts/{id}/like: ' . $e->getMessage());
+            return $this->registerError('Erro na rota PUT/posts/{id}/like: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Adiciona um comentário ao post específico.
+     * O comentário é criado com os dados do usuário logado.
+     * Em caso de erro, é registrado no log e retorna status 500 em json.
+     * @param \Illuminate\Http\Request $request
+     * @param string $id
+     * @return JsonResponse
+     */
+    public function commentPost(Request $request, string $id): JsonResponse
+    {
+        // Valida os dados da requisição
+        $validateData = $request->validate([
+            'comment' => 'required|string|max:255',
+        ]);
+
+        try {
+            // Busca o post pelo id
+            $post = Post::find($id);
+
+            // Verifica se o post existe
+            if (!$post) {
+                return response()->json([
+                    'message' => 'Post not found',
+                ], 404);
+            }
+
+            // Cria um array de comentários
+            $comments = $post->comments ?? []; // Caso não exista, é inicializado como vazio
+
+            // Cria o novo comentário, com os dados do usuário logado
+            $comment = [
+                'id' => Str::random(10),
+                'user_id' => auth()->user()->id,
+                'user_name' => auth()->user()->name,
+                'user_image' => auth()->user()->image,
+                'comment' => $validateData['comment'],
+            ];
+
+            // Adiciona o novo comentário ao array de comentários
+            $comments[] = $comment;
+
+            // Adiciona os comentários ao post
+            $post->comments = $comments;
+
+            // Salva as mudanças no banco
+            $post->save();
+
+            // Retorna a resposta de sucesso na adição do comentário
+            return response()->json([
+                'message' => 'Comment added successfully',
+                'data' => new PostResource($post),
+            ], 200);
+        } catch (Exception $e) {
+            // Registra o erro no log e retorna um JsonResponse com erro 500.
+            return $this->registerError('Erro na rota PUT/posts/{id}/comment: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Busca posts pelo título.
+     * Retorna os posts que contêm a string de busca no título.
+     * Em caso de erro, é registrado no log e retorna status 500 em json.
+     * @param string $query
+     * @return JsonResponse
+     */
+    public function searchPost(string $query): JsonResponse
+    {
+        try {
+            // Busca os posts que contêm a string de busca no título
+            $posts = Post::where('title', 'like', "%$query%")->get();
+
+            // Verifica se existem posts
+            if ($posts->isEmpty()) {
+                return response()->json([
+                    'message' => 'No posts found',
+                ], 404);
+            }
+
+            // Retorna a resposta com os posts
+            return response()->json([
+                'message' => 'Posts retrieved successfully',
+                'data' => PostResource::collection($posts),
+            ], 200);
+        } catch (Exception $e) {
+            // Registra o erro no log e retorna um JsonResponse com erro 500.
+            return $this->registerError('Erro na rota GET/posts/search/{query}: ' . $e->getMessage());
         }
     }
 
