@@ -13,7 +13,7 @@ Route::controller(AuthController::class)->group(function (): void {
 
 Route::controller(UserController::class)->group(function (): void {
     Route::get('/users/{id}', 'show')->middleware('auth:sanctum'); // Recupera um usuário
-    Route::post('/users', 'store')->middleware('auth:sanctum'); // Cria um novo usuário
+    Route::post('/users', 'store'); // Cria um novo usuário
     Route::put('/users/{id}', 'update')->middleware('auth:sanctum'); // Atualiza um usuário
     Route::get('/users/{id}/posts', 'getUserPosts')->middleware('auth:sanctum'); // Recupera os posts de um usuário
 });
