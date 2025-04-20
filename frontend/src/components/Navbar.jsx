@@ -35,10 +35,12 @@ const Navbar = () => {
   return (
     <nav id="nav">
       <Link to="/">ReactGram</Link>
-      <form id="search-form">
-        <BsSearch />
-        <input type="text" placeholder="Pesquisar" />
-      </form>
+      {auth && (
+        <form id="search-form">
+          <BsSearch />
+          <input type="text" placeholder="Pesquisar" />
+        </form>
+      )}
       <ul id="nav-links">
         {auth ? (
           <>

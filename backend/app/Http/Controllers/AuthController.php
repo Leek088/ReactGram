@@ -34,7 +34,9 @@ class AuthController extends Controller
             // Se o usuário não existir ou a senha estiver incorreta, retorna erro
             if (!$user || !Hash::check($request->password, $user->password)) {
                 return response()->json([
-                    'message' => 'Invalid credentials',
+                    'errors' => [
+                        'message' => 'Credenciais inválidas.',
+                    ],
                 ], 401);
             }
 
@@ -45,7 +47,7 @@ class AuthController extends Controller
             return response()->json([
                 'message' => 'Login successful',
                 'token' => $token,
-                'user' => new UserResource($user),
+                'data' => new UserResource($user),
             ], 200);
         } catch (Exception $e) {
             // Registra o erro no log
@@ -53,8 +55,10 @@ class AuthController extends Controller
 
             // Retorna uma resposta de erro em caso de falha
             return response()->json([
-                'message' => 'Internal server error.',
-                'error' => 'Ocorreu um erro ao processar sua solicitação.'
+                'errors' => [
+                    'message' => 'Internal server error.',
+                    'error' => 'Ocorreu um erro ao processar sua solicitação.'
+                ],
             ], 500);
         }
     }
@@ -67,12 +71,25 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        // Revoga o token do usuário
-        $request->user()->currentAccessToken()->delete();
+        try {
+            // Revoga o token do usuário
+            $request->user()->currentAccessToken()->delete();
 
-        // Retorna mensagem de sucesso
-        return response()->json([
-            'message' => 'Logout successful',
-        ], 200);
+            // Retorna mensagem de sucesso
+            return response()->json([
+                'message' => 'Logout successful',
+            ], 200);
+        } catch (Exception $e) {
+            // Registra o erro no log
+            Log::channel('api_errors')->error('Erro na rota Post /logout: ' . $e->getMessage());
+
+            // Retorna uma resposta de erro em caso de falha
+            return response()->json([
+                'errors' => [
+                    'message' => 'Internal server error.',
+                    'error' => 'Ocorreu um erro ao processar sua solicitação.'
+                ],
+            ], 500);
+        }
     }
 }
