@@ -26,7 +26,7 @@ const Navbar = () => {
   const dispatch = useDispatch();
 
   const handleLogout = () => {
-    dispatch(logout());
+    dispatch(logout(user));
     dispatch(reset());
 
     navigate("/login");
@@ -47,7 +47,7 @@ const Navbar = () => {
                 <BsHouseDoorFill />
               </NavLink>
             </li>
-            {user && (
+            {user && user.data && (
               <li>
                 <NavLink to={`/users/${user.data.id}`}>
                   <BsFillCameraFill />

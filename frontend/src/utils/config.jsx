@@ -2,11 +2,8 @@ export const api = "http://localhost:8000/api";
 
 export const requestConfig = (method, data, token = null, image = null) => {
   let config;
-  const headers = {
+  const headers_default = {
     Accept: "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Accept-encoding": "gzip, deflate, br",
-    Connection: "keep-alive",
     "Content-Type": image ? "multipart/form-data" : "application/json",
   };
 
@@ -14,18 +11,18 @@ export const requestConfig = (method, data, token = null, image = null) => {
     config = {
       method: method,
       body: data,
-      headers: headers,
+      headers: headers_default,
     };
   } else if (method === "DELETE" || data === null) {
     config = {
       method: method,
-      headers: {},
+      headers: headers_default,
     };
   } else {
     config = {
       method: method,
-      body: JSON.stringify(data),
-      headers: headers,
+      body: data,
+      headers: headers_default,
     };
   }
 

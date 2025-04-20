@@ -5,33 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch built-in server and Debug",
-      "type": "php",
-      "request": "launch",
-      "noDebug": false,
-      "runtimeArgs": ["-S", "localhost:8000", "-t", "."],
-      "cwd": "${workspaceRoot}/.",
-      "serverReadyAction": {
-        "action": "openExternally"
-      }
-    },
-    {
-      "name": "Launch built-in server and Profile",
-      "type": "php",
-      "request": "launch",
-      "noDebug": true,
-      "runtimeArgs": ["-S", "localhost:8000", "-t", "."],
-      "cwd": "${workspaceRoot}/.",
-      "serverReadyAction": {
-        "action": "openExternally"
-      },
-      "profile": true,
-      "openProfile": true
-    },
-    {
-      "name": "Listen for Xdebug",
+      "name": "PHP - Xdebug",
       "type": "php",
       "request": "launch"
+    },
+
+    {
+      "name": "React Debug",
+      "type": "firefox",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/src"
     }
   ]
 }

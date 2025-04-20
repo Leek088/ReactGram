@@ -28,9 +28,7 @@ const Register = () => {
 
     const user = { name, email, password, password_confirmation, abilities };
 
-    dispatch(register(user));
-
-    console.log(user);
+    dispatch(register(JSON.stringify(user)));
   };
 
   useEffect(() => {

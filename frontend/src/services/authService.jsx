@@ -1,8 +1,8 @@
 import { api, requestConfig } from "../utils/config";
 
 // Registra um usuário
-const register = async (data) => {
-  const config = requestConfig("POST", data);
+const register = async (user) => {
+  const config = requestConfig("POST", user);
 
   try {
     const res = await fetch(api + "/users", config)
@@ -20,15 +20,15 @@ const register = async (data) => {
 };
 
 // Desloga o usuário
-const logout = async (data) => {
-  const config = requestConfig("POST", data, data.token);
+const logout = async (user) => {
+  const config = requestConfig("POST", user.data, user.token);
 
   try {
     const res = await fetch(api + "/logout", config)
       .then((res) => res.json())
       .catch((err) => err);
 
-    if (res && res.success) {
+    if (res) {
       localStorage.removeItem("user");
     }
 
