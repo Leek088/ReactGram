@@ -102,7 +102,9 @@ class UserController extends Controller
             // Se o usuário não existir, retorna uma resposta de erro
             if (!$user) {
                 return response()->json([
-                    'message' => 'User not found',
+                    'errors' => [
+                        'message' => 'User not found',
+                    ]
                 ], 404);
             }
 
@@ -256,8 +258,10 @@ class UserController extends Controller
 
         // Retorna uma resposta de erro em caso de falha
         return response()->json([
-            'message' => 'Internal server error.',
-            'error' => 'Ocorreu um erro ao processar sua solicitação.'
+            'errors' => [
+                'message' => 'Internal server error.',
+                'error' => 'Ocorreu um erro ao processar sua solicitação.'
+            ],
         ], 500);
     }
 }

@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "./pages/Home/home";
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
+import EditProfile from "./pages/EditProfile/EditProfile";
 // Components
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -28,6 +29,10 @@ function App() {
             <Route
               path="/"
               element={auth ? <Home /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/profile"
+              element={auth ? <EditProfile /> : <Navigate to="/login" />}
             />
             <Route
               path="/login"
