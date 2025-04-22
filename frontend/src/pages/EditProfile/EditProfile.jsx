@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { getUser, reset } from "../../slices/userSlice";
+import { getImageUser, getUser, reset } from "../../slices/userSlice";
 
 const EditProfile = () => {
   // Dados do usuário (user)
@@ -23,29 +23,58 @@ const EditProfile = () => {
   const dispatch = useDispatch();
 
   // Selector para recupear os estados do userSlice
-  const { user, loading, success, error } = useSelector((state) => state.user);
+  const { user, imageProfile, loading, success, error } = useSelector(
+    (state) => state.user
+  );
 
   // id do usuário logado
   const userId = JSON.parse(localStorage.getItem("user")).id;
 
   // Faz a requisição para recuperar os dados do usuário
   useEffect(() => {
+    // Recupera os dados do usuário
     const fetchUser = async () => {
       dispatch(reset()); // Reseta os estados do userSlice
-      dispatch(getUser("33")); // Recupera os dados do usuário
+      dispatch(getUser(userId)); // Recupera os dados do usuário
     };
-    fetchUser();
+
+    fetchUser(); // Chama a função para recuperar os dados do usuário
   }, [dispatch, userId]);
+
+  // Faz a requisição para recuperar a imagem do usuário
+  useEffect(() => {
+    // Recupera a imagem do usuário
+    if (user) {
+      if (user.profile_picture) {
+        const fetchImage = async () => {
+          dispatch(getImageUser(user.profile_picture));
+        };
+
+        fetchImage(); // Chama a função para recuperar a imagem do usuário
+      }
+    }
+  }, [dispatch, user]);
 
   // Sempre que o usuário for alterado, atualiza os estados do componente
   useEffect(() => {
     if (user) {
       setName(user.name);
       setEmail(user.email);
-      setProfileImage(user.profileImage);
+      setProfileImage(imageProfile);
       setBio(user.bio);
     }
   }, [user]);
+
+  // Função para lidar com a imagem de perfil
+  const handleImageProfile = (e) => {
+    const image = e.target.files[0]; // Pega a imagem do input
+    setPreviewImage(image); // Atualiza a imagem de preview
+    setProfileImage(image); // Atualiza a imagem de perfil
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault(); // Cancela o envio do formulário
+  };
 
   return (
     <div id="edit-profile">
@@ -57,18 +86,16 @@ const EditProfile = () => {
           <p className="subtitle">
             Adicione uma imagem de perfil, e conte mais um pouco sobre você...
           </p>
-          {/* {(user.profileImage || previewImage) && (
-        <img
-        className="profile-image"
-        src={
-          previewImage
-          ? URL.createObjectURL(previewImage)
-          : `${uploads}/users/${user.profileImage}`
-          }
-          alt={user.name}
-          />
-          )} */}
-          <form>
+          {(profileImage || previewImage) && (
+            <img
+              className="profile-image"
+              src={
+                previewImage ? URL.createObjectURL(previewImage) : profileImage
+              }
+              alt={user.name}
+            />
+          )}
+          <form onSubmit={handleSubmit}>
             <input
               type="text"
               placeholder="Nome"
@@ -83,7 +110,7 @@ const EditProfile = () => {
             />
             <label>
               <span>Imagem de Perfil:</span>
-              <input type="file" />
+              <input type="file" onChange={handleImageProfile} />
             </label>
             <label>
               <span>Bio:</span>

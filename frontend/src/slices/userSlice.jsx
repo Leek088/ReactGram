@@ -6,6 +6,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // Estado inicial do slice de usuário
 const initialState = {
   user: null,
+  imageProfile: null,
   error: false,
   success: false,
   loading: false,
@@ -35,6 +36,24 @@ export const getUser = createAsyncThunk(
   }
 );
 
+export const getImageUser = createAsyncThunk(
+  "user/getImageUser",
+  async (filename, thunkAPI) => {
+    // Faz a requisição à API para recuperar a imagem do usuário
+    const image = await userService.getImageUser(filename);
+
+    // Se a requisição falhar, retorna o erro
+    if (image.errors) {
+      return thunkAPI.rejectWithValue(Object.values(image.errors)); // Retorna o erro
+    }
+
+    // Se a requisição for bem sucedida, retorna o objeto com a imagem do usuário
+
+    console.log(image);
+    return image.url;
+  }
+);
+
 /**
  * Cria o slice de usuário
  * O slice contém os dados e as ações relacionadas ao usuário e suas requisições
@@ -48,6 +67,7 @@ export const userSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.success = false;
+      state.imageProfile = null;
     },
   },
   extraReducers: (builder) => {
@@ -72,6 +92,16 @@ export const userSlice = createSlice({
         state.success = false; // Sem sucesso na requisição
         state.error = action.payload; // obtém os erros da requisição
         state.user = null; // Limpa o usuário
+      })
+      // getImageUser
+      .addCase(getImageUser.fulfilled, (state, action) => {
+        // Se a requisição for bem sucedida, atualiza a imagme.
+        state.imageProfile = action.payload; // Atualiza a imagem com os dados retornados da API
+        console.log(action.payload); // Imprime a imagem no console
+      })
+      .addCase(getImageUser.rejected, (state) => {
+        // Se a requisição falhar, remove a imagem.
+        state.imageProfile = null; // Limpa a imagem
       });
   },
 });

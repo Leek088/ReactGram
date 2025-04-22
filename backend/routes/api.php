@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -27,4 +28,9 @@ Route::controller(PostController::class)->group(function (): void {
     Route::put('/posts/{id}/like', 'likePost')->middleware('auth:sanctum'); // Adiciona um like a um post
     Route::put('/posts/{id}/comment', 'commentPost')->middleware('auth:sanctum'); // Adiciona um like a um post
     Route::get('/posts/search/{query}', 'searchPost')->middleware('auth:sanctum'); // Busca posts por título
+});
+
+Route::controller(FileController::class)->group(function (): void {
+    // Recupera o arquivo passado por parâmetro
+    Route::get('/file/{filename}', 'getFile')->middleware('auth:sanctum');
 });
