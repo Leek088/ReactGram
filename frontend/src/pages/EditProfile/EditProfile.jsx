@@ -1,5 +1,8 @@
 import "./EditProfile.css";
 
+// Caminho da imagem do usuário
+import { apiImageUser } from "../../utils/config";
+
 //components
 import Message from "../../components/Message";
 
@@ -8,7 +11,7 @@ import { useEffect, useState } from "react";
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { getImageUser, getUser, reset } from "../../slices/userSlice";
+import { getUser, reset } from "../../slices/userSlice";
 
 const EditProfile = () => {
   // Dados do usuário (user)
@@ -23,9 +26,7 @@ const EditProfile = () => {
   const dispatch = useDispatch();
 
   // Selector para recupear os estados do userSlice
-  const { user, imageProfile, loading, success, error } = useSelector(
-    (state) => state.user
-  );
+  const { user, loading, success, error } = useSelector((state) => state.user);
 
   // id do usuário logado
   const userId = JSON.parse(localStorage.getItem("user")).id;
@@ -41,27 +42,19 @@ const EditProfile = () => {
     fetchUser(); // Chama a função para recuperar os dados do usuário
   }, [dispatch, userId]);
 
-  // Faz a requisição para recuperar a imagem do usuário
-  useEffect(() => {
-    // Recupera a imagem do usuário
-    if (user) {
-      if (user.profile_picture) {
-        const fetchImage = async () => {
-          dispatch(getImageUser(user.profile_picture));
-        };
-
-        fetchImage(); // Chama a função para recuperar a imagem do usuário
-      }
-    }
-  }, [dispatch, user]);
-
   // Sempre que o usuário for alterado, atualiza os estados do componente
   useEffect(() => {
     if (user) {
       setName(user.name);
       setEmail(user.email);
-      setProfileImage(imageProfile);
       setBio(user.bio);
+      if (user.profile_picture) {
+        // Caminho da imagem do usuário no servidor
+        setProfileImage(apiImageUser + "/" + user.profile_picture);
+      } else {
+        // Se não houver imagem, seta como null
+        setProfileImage(null);
+      }
     }
   }, [user]);
 
@@ -69,7 +62,6 @@ const EditProfile = () => {
   const handleImageProfile = (e) => {
     const image = e.target.files[0]; // Pega a imagem do input
     setPreviewImage(image); // Atualiza a imagem de preview
-    setProfileImage(image); // Atualiza a imagem de perfil
   };
 
   const handleSubmit = async (e) => {
@@ -130,6 +122,7 @@ const EditProfile = () => {
                 value={password || ""}
               />
             </label>
+            <input type="submit" value="Atualizar" />
           </form>
         </>
       )}

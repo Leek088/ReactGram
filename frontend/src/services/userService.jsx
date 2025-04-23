@@ -34,24 +34,18 @@ const getUser = async (id) => {
   }
 };
 
-/**
- * Recupera a imagem do usuário, na API, pelo nome do arquivo
- * A requisição é feita com fetch - método GET, sem body, com parametro e token de autenticação
- * @param {string} filename - Nome do arquivo da imagem
- * @returns {object} - Objeto com os dados da imagem
- */
-const getImageUser = async (filename) => {
+const updateUser = async (id, data) => {
   // Recupera o token do localStorage
   const token = JSON.parse(localStorage.getItem("access_token"));
 
   // Recupera a configuração da requisição
-  const config = requestConfig("GET", null, token);
+  const config = requestConfig("PUT", data, token);
 
   try {
     // Faz a requisição à API
-    const res = await fetch(api + "/file/" + filename, config)
+    const res = await fetch(api + "/users/" + id, config)
       // Se a requisição for bem sucedida, retorna o objeto
-      .then((res) => res)
+      .then((res) => res.json())
       // Se a requisição falhar, retorna o erro
       .catch((err) => err);
 
@@ -66,7 +60,7 @@ const getImageUser = async (filename) => {
 //Constante com os métodos do serviço de usuário
 const userService = {
   getUser,
-  getImageUser,
+  updateUser,
 };
 
 // Exporta os serviços de usuário

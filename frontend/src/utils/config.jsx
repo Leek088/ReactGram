@@ -1,4 +1,6 @@
 export const api = "http://localhost:8000/api";
+export const apiImagePost = "http://localhost:8000/storage/posts";
+export const apiImageUser = "http://localhost:8000/storage/users";
 
 export const requestConfig = (method, data, token = null, image = null) => {
   let config;
