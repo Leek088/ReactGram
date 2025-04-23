@@ -7,6 +7,13 @@
   text-align: center;
 }
 
+#edit-profile div {
+  background-color: white;
+  color: green;
+  border-radius: 5px;
+  padding: 5px;
+}
+
 .subtitle {
   color: #ccc;
 }
@@ -16,4 +23,9 @@
   height: 150px;
   border-radius: 50%;
   margin-bottom: 1em;
+}
+
+hr {
+  border: 1px solid #ccc;
+  margin: 1em 0;
 }

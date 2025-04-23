@@ -8,6 +8,7 @@ const initialState = {
   user: null,
   error: false,
   success: false,
+  updateSucess: false,
   loading: false,
 };
 
@@ -64,6 +65,7 @@ export const userSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.success = false;
+      state.updateSucess = false;
     },
   },
   extraReducers: (builder) => {
@@ -88,6 +90,29 @@ export const userSlice = createSlice({
         state.success = false; // Sem sucesso na requisição
         state.error = action.payload; // obtém os erros da requisição
         state.user = null; // Limpa o usuário
+      })
+      // updateUser
+      .addCase(updateUser.pending, (state) => {
+        // No ato da requisição, reseta os estados.
+        state.loading = true; // carregando
+        state.success = false; // sem finalizar
+        state.error = null; // Sem erro
+      })
+      .addCase(updateUser.fulfilled, (state, action) => {
+        // Se a requisição for bem sucedida, atualiza os estados.
+        state.loading = false; // Para o carregamento
+        state.success = true; // Sucesso na requisição
+        state.error = null; // Sem erro
+        state.updateSucess = true; // Usuario atualizado
+        state.user = action.payload; // Atualiza o usuário com os dados retornados da API
+        console.log(action.payload);
+      })
+      .addCase(updateUser.rejected, (state, action) => {
+        // Se a requisição falhar, atualiza os estados.
+        state.loading = false; // Para o carregamento.
+        state.success = true; // Finalizou o procedimento.
+        state.updateSucess = false; // Usuário não atualizado.
+        state.error = action.payload; // obtém os erros da requisição
       });
   },
 });

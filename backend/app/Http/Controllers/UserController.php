@@ -11,6 +11,8 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+
 
 
 class UserController extends Controller
@@ -135,10 +137,9 @@ class UserController extends Controller
         // Valida os dados da requisição
         $validadeData = $request->validate([
             'name' => 'required|string|min:3,max:255',
-            'email' => "required|string|email|max:255|unique:users,email,$id",
-            'password' => 'required|string|min:6|confirmed',
-            'password_confirmation' => 'required|string|min:6',
-            'abilities' => 'required|array',
+            'password' => 'string|min:6|confirmed',
+            'password_confirmation' => 'string|min:6',
+            'abilities' => 'array',
             'image' => 'image|mimes:jpeg,png,jpg,gif',
         ]);
 
@@ -149,26 +150,28 @@ class UserController extends Controller
             // Se o usuário não existir, retorna uma resposta de erro
             if (!$user) {
                 return response()->json([
-                    'message' => 'User not found',
+                    'errors' => ['message' => 'User not found'],
                 ], 404);
             }
 
             // Verifica se o arquivo de imagem foi recebido
             if ($request->file('image')) {
-                //Recupera o nome da imagem
+                //Verifica se o usuário possui já uma imagem
                 $imageName = $user->profile_picture ?: null;
-                // Atualiza a imagem do usuario da requisição
-                $this->uploadImage($request->file('image'), $imageName);
+                // Atualiza a imagem do usuario pela da requisição
+                $validadeData['profile_picture'] = $this->uploadImage($request->file('image'), $imageName);
             }
 
             // Criptografa a senha da requisição
-            $validadeData['password'] = bcrypt($validadeData['password']);
+            if ($request->password) {
+                $validadeData['password'] = bcrypt($request->password);
+            }
 
             // Atualiza os dados do usuário
             $user->update($validadeData);
 
             // Cria um novo token de acesso com as habilidades especificadas. Duração de uma semana
-            $token = $user->createToken($user->email, $validadeData['abilities'], now()->addWeek())->plainTextToken;
+            $token = $user->createToken($user->email, ['* '], now()->addWeek())->plainTextToken;
 
             // Retorna a resposta com o token e os dados do usuário atualizado
             return response()->json([

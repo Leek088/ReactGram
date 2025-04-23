@@ -11,22 +11,24 @@ import { useEffect, useState } from "react";
 
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { getUser, reset } from "../../slices/userSlice";
+import { getUser, updateUser, reset } from "../../slices/userSlice";
 
 const EditProfile = () => {
   // Dados do usuário (user)
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [password_confirmation, setPasswordConfirmation] = useState("");
   const [profileImage, setProfileImage] = useState("");
-  const [bio, setBio] = useState("");
   const [previewImage, setPreviewImage] = useState("");
 
   // dispatch para os métodos do userSlice
   const dispatch = useDispatch();
 
   // Selector para recupear os estados do userSlice
-  const { user, loading, success, error } = useSelector((state) => state.user);
+  const { user, loading, success, updateSucess, error } = useSelector(
+    (state) => state.user
+  );
 
   // id do usuário logado
   const userId = JSON.parse(localStorage.getItem("user")).id;
@@ -47,7 +49,6 @@ const EditProfile = () => {
     if (user) {
       setName(user.name);
       setEmail(user.email);
-      setBio(user.bio);
       if (user.profile_picture) {
         // Caminho da imagem do usuário no servidor
         setProfileImage(apiImageUser + "/" + user.profile_picture);
@@ -64,14 +65,36 @@ const EditProfile = () => {
     setPreviewImage(image); // Atualiza a imagem de preview
   };
 
+  // Função para lidar com o envio do formulário e atualizar o usuário
   const handleSubmit = async (e) => {
     e.preventDefault(); // Cancela o envio do formulário
+
+    const formData = new FormData(); // Cria um novo objeto FormData
+    // formData.append("_method", "PUT"); // Adiciona o método PUT ao FormData
+    formData.append("_method", "PUT"); // Adiciona o nome ao FormData
+    formData.append("name", name); // Adiciona o nome ao FormData
+    // se o usuário digitar uma nova senha, adiciona ao FormData
+    if (password) {
+      formData.append("password", password); // Adiciona a senha ao FormData
+      formData.append("password_confirmation", password_confirmation); // Adiciona a confirmação da senha ao FormData
+    }
+    // Se o usuário selecionou uma imagem, adiciona ao FormData
+    if (previewImage) {
+      formData.append("image", previewImage); // Adiciona a imagem de perfil ao FormData
+    }
+    // Reseta os estados do userSlice
+    dispatch(reset());
+    // Atualiza os dados do usuário
+    dispatch(updateUser({ id: userId, data: formData })); // Chama a função para atualizar os dados do usuário
   };
 
   return (
     <div id="edit-profile">
-      {loading && <p> Carregando...</p>}
       {error && <Message messages={error} type="error" />}
+      {updateSucess && (
+        <div className="msg-success">Usuário atualizado com sucesso.</div>
+      )}
+      {loading && <p> Carregando...</p>}
       {success && (
         <>
           <h2>Edite seus dados</h2>
@@ -104,15 +127,7 @@ const EditProfile = () => {
               <span>Imagem de Perfil:</span>
               <input type="file" onChange={handleImageProfile} />
             </label>
-            <label>
-              <span>Bio:</span>
-              <input
-                type="text"
-                placeholder="Descrição do perfil"
-                onChange={(e) => setBio(e.target.value)}
-                value={bio || ""}
-              />
-            </label>
+            <hr />
             <label>
               <span>Quer alterar sua senha?</span>
               <input
@@ -120,6 +135,15 @@ const EditProfile = () => {
                 placeholder="Digite sua nova senha..."
                 onChange={(e) => setPassword(e.target.value)}
                 value={password || ""}
+              />
+            </label>
+            <label>
+              <span>Confirme a senha</span>
+              <input
+                type="password"
+                placeholder="Confirme sua senha..."
+                onChange={(e) => setPasswordConfirmation(e.target.value)}
+                value={password_confirmation || ""}
               />
             </label>
             <input type="submit" value="Atualizar" />

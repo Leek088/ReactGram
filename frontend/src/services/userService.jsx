@@ -39,7 +39,7 @@ const updateUser = async (id, data) => {
   const token = JSON.parse(localStorage.getItem("access_token"));
 
   // Recupera a configuração da requisição
-  const config = requestConfig("PUT", data, token);
+  const config = requestConfig("POST", data, token, true);
 
   try {
     // Faz a requisição à API

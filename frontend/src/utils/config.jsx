@@ -4,27 +4,25 @@ export const apiImageUser = "http://localhost:8000/storage/users";
 
 export const requestConfig = (method, data, token = null, image = null) => {
   let config;
-  const headers_default = {
-    Accept: "application/json",
-    "Content-Type": image ? "multipart/form-data" : "application/json",
-  };
 
   if (image) {
     config = {
       method: method,
       body: data,
-      headers: headers_default,
+      headers: {
+        Accept: "application/json",
+      },
     };
   } else if (method === "DELETE" || data === null) {
     config = {
       method: method,
-      headers: headers_default,
+      headers: { Accept: "application/json" },
     };
   } else {
     config = {
       method: method,
       body: data,
-      headers: headers_default,
+      headers: { "Content-Type": "application/json" },
     };
   }
 
