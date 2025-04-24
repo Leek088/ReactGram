@@ -11,8 +11,6 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
-
 
 
 class UserController extends Controller
@@ -32,6 +30,7 @@ class UserController extends Controller
         $validadeData = $request->validate([
             'name' => 'required|string|min:3,max:255',
             'email' => 'required|string|email|max:255|unique:users,email',
+            'bio' => 'string|min:3,max:255',
             'password' => 'required|string|min:6|confirmed',
             'password_confirmation' => 'required|string|min:6',
             'abilities' => 'required|array',
@@ -137,6 +136,7 @@ class UserController extends Controller
         // Valida os dados da requisição
         $validadeData = $request->validate([
             'name' => 'required|string|min:3,max:255',
+            'bio' => 'string|min:3,max:255',
             'password' => 'string|min:6|confirmed',
             'password_confirmation' => 'string|min:6',
             'abilities' => 'array',
@@ -202,7 +202,7 @@ class UserController extends Controller
             // Se o usuário não existir, retorna uma resposta de erro
             if (!$user) {
                 return response()->json([
-                    'message' => 'User not found',
+                    'errors' => ['message' => 'User not found',]
                 ], 404);
             }
 
@@ -212,10 +212,7 @@ class UserController extends Controller
             // Retorna os dados do usuário e os posts
             return response()->json([
                 'message' => 'User posts retrieved successfully',
-                'data' => [
-                    'user' => new UserResource($user),
-                    'posts' => PostResource::collection($posts),
-                ],
+                'data' => PostResource::collection($posts),
             ], 200);
         } catch (Exception $e) {
             // Registra o erro no log e retorna um JsonResponse com erro 500.

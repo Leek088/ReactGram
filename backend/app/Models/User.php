@@ -20,6 +20,7 @@ class User extends Model
         'password',
         'abilities',
         'profile_picture',
+        'bio',
     ];
 
     public function posts(): HasMany

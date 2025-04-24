@@ -20,6 +20,7 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => bcrypt('password'),
+            'bio' => fake()->sentence(),
             'abilities' => ['photo.index', 'photo.show', 'photo.store', 'photo.update', 'photo.destroy'],
         ];
     }

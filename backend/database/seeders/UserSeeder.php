@@ -17,6 +17,7 @@ class UserSeeder extends Seeder
             'name' => 'Leonardo Nunes',
             'email' => 'leonardo@email.com',
             'password' => bcrypt('password'),
+            'bio' => 'Só os fortes sobrevivem.',
             'abilities' => ['photo.index', 'photo.show', 'photo.store', 'photo.update', 'photo.destroy'],
         ]);
 

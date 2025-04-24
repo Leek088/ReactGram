@@ -105,7 +105,6 @@ export const userSlice = createSlice({
         state.error = null; // Sem erro
         state.updateSucess = true; // Usuario atualizado
         state.user = action.payload; // Atualiza o usuário com os dados retornados da API
-        console.log(action.payload);
       })
       .addCase(updateUser.rejected, (state, action) => {
         // Se a requisição falhar, atualiza os estados.
