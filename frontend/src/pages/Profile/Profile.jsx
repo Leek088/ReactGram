@@ -10,18 +10,27 @@ import { useState, useEffect, useRef } from "react";
 import { BsFillEyeFill, BsPencilFill, BsXLg } from "react-icons/bs";
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { getPostsByUserId, reset } from "../../slices/postSlice";
+import { getPostsByUserId, createPost, reset } from "../../slices/postSlice";
+import { getUser } from "../../slices/userSlice";
 // components
 import Message from "../../components/Message";
 
 const Profile = () => {
   const { id } = useParams(); // Id usuário passado por parametro
-  const { user } = useSelector((state) => state.auth); // usuário logado
-  const { posts, error, success, messageSuccess, loading } = useSelector(
+  const userLogged = JSON.parse(localStorage.getItem("user")); // Recupera o usuário logado do localStorage
+
+  // states iniciais do slice user
+  const { user } = useSelector((state) => state.user);
+  // states iniciais do slice post
+  const { posts, error, messageSuccess, loading } = useSelector(
     (state) => state.post
-  ); // states iniciais do slice
-  // states
-  const [title, setTitle] = useState(""); // Titulo da foto
+  );
+  // states para o formulário de novo post
+  const [title, setTitle] = useState(""); // Titulo do post
+  const [bio, setBio] = useState(""); // Biografia do post
+  const [imagePost, setImagePost] = useState(null); // Imagem do post
+
+  // states para o formulário de edição de post
   const [editTitle, setEditTitle] = useState(""); // Titulo da foto editada
   const [editImage, setEditImage] = useState(""); // Imagem a ser editada
 
@@ -29,6 +38,14 @@ const Profile = () => {
 
   const newPostForm = useRef(); // Referência para o formulário de nova foto
   const editPostForm = useRef(); // Referência para o formulário de nova foto
+
+  useEffect(() => {
+    // Recupera o usuário pelo id
+    const fetchUser = async () => {
+      dispatch(getUser(id)); // Recupera os dados do usuário
+    };
+    fetchUser(); // Chama a função para recuperar os dados do usuário
+  }, [dispatch, id]);
 
   // Faz a requisição para recuperar os posts do usuário
   useEffect(() => {
@@ -41,12 +58,17 @@ const Profile = () => {
     fetchPosts(); // Chama a função para recuperar os dados do usuário
   }, [dispatch, id]);
 
-  if (loading) {
-    return <p>Carregando...</p>;
-  }
-
   const submitHandle = async (e) => {
     e.preventDefault(); // Previne o comportamento padrão do formulário
+    const formData = new FormData(); // Cria um novo objeto FormData
+    if (imagePost) {
+      formData.append("image", imagePost); // Adiciona a imagem ao objeto FormData
+    }
+    formData.append("title", title); // Adiciona o título ao objeto FormData
+    formData.append("bio", bio); // Adiciona o título ao objeto FormData
+    formData.append("user_id", user.id); // Adiciona o id do usuário ao objeto FormData
+    dispatch(reset()); // Reseta os estados do userSlice
+    dispatch(createPost(formData)); // Chama a função para criar uma nova foto
   };
 
   const handleUpdate = async (e) => {
@@ -55,31 +77,39 @@ const Profile = () => {
 
   const handleCancelEdit = () => {};
 
+  // Recupera a imagem do input, sempre que for modificada
   const handleFile = (e) => {
-    const image = e.target.files[0]; // Recupera a imagem do input
-    const formData = new FormData(); // Cria um novo objeto FormData
-    formData.append("image", image); // Adiciona a imagem ao objeto FormData
-    formData.append("title", title); // Adiciona o título ao objeto FormData
-
-    // Chama a função para criar uma nova foto
-    createPhoto(formData);
+    const img = e.target.files[0]; // Pega a imagem do input
+    setImagePost(img); // Atualiza a imagem de preview
   };
+
+  if (loading) {
+    return (
+      <div id="profile">
+        <div className="profile-header">
+          <p>Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div id="profile">
       <div className="profile-header">
-        {user.profile_picture && (
-          <img
-            src={`${apiImageUser}/${user.profile_picture}`}
-            alt={user.name}
-          />
+        {user && user.profile_picture && (
+          <>
+            <img
+              src={`${apiImageUser}/${user.profile_picture}`}
+              alt={user.name}
+            />
+            <div className="profile-description">
+              <h2>{user.name}</h2>
+              <p>{user.bio}</p>
+            </div>
+          </>
         )}
-        <div className="profile-description">
-          <h2>{user.name}</h2>
-          <p>{user.bio}</p>
-        </div>
       </div>
-      {id == user.id && (
+      {user && id == userLogged.id && (
         <>
           <div className="new-photo" ref={newPostForm}>
             <h3>Compartilhe algum momento seu:</h3>
@@ -91,6 +121,15 @@ const Profile = () => {
                   placeholder="Insira um título"
                   onChange={(e) => setTitle(e.target.value)}
                   value={title || ""}
+                />
+              </label>
+              <label>
+                <span>Biografia para a foto:</span>
+                <input
+                  type="text"
+                  placeholder="Insira uma descrição"
+                  onChange={(e) => setBio(e.target.value)}
+                  value={bio || ""}
                 />
               </label>
               <label>
@@ -119,8 +158,11 @@ const Profile = () => {
             </form>
           </div>
           {error && <Message messages={error} type="error" />}
-          {messageSuccess.length > 0 && (
-            <Message messages={messageSuccess} type="success" />
+          {messageSuccess && (
+            <Message
+              messages={["Postagem realizada com sucesso."]}
+              type="success"
+            />
           )}
         </>
       )}
@@ -132,21 +174,21 @@ const Profile = () => {
               <div className="post" key={post.id}>
                 {post.post_image && (
                   <img
-                    src={`${apiImagePost}/posts/${post.post_image}`}
+                    src={`${apiImagePost}/${post.post_image}`}
                     alt={post.title}
                   />
                 )}
-                {id === user.id ? (
+                {id == userLogged.id ? (
                   <div className="actions">
-                    <Link to={`/posts/${photo._id}`}>
+                    <Link to={`/posts/${post.id}`}>
                       <BsFillEyeFill />
                     </Link>
-                    <BsPencilFill onClick={() => handleEdit(photo)} />
-                    <BsXLg onClick={() => handleDelete(photo._id)} />
+                    <BsPencilFill onClick={() => handleEdit(post)} />
+                    <BsXLg onClick={() => handleDelete(post.id)} />
                   </div>
                 ) : (
-                  <Link className="btn" to={`/photos/${photo._id}`}>
-                    Ver
+                  <Link to={`/posts/${post.id}`}>
+                    <BsFillEyeFill />
                   </Link>
                 )}
               </div>

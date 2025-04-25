@@ -28,12 +28,12 @@
   flex-wrap: wrap;
 }
 
-.photo {
+.post {
   width: 32%;
   margin: 0.3%;
 }
 
-.photo img {
+.post img {
   width: 100%;
 }
 

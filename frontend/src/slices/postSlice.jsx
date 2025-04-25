@@ -1,5 +1,5 @@
 // Arquivo de serviços de usuário
-import userService from "../services/userService";
+import postService from "../services/postService";
 // Redux Toolkit
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
@@ -8,7 +8,7 @@ const initialState = {
   posts: [],
   error: false,
   success: false,
-  messageSuccess: [],
+  messageSuccess: false,
   loading: false,
 };
 
@@ -24,7 +24,7 @@ export const getPostsByUserId = createAsyncThunk(
   "post/getPostsByUserId",
   async (id, thunkAPI) => {
     // Faz a requisição ao serviço, para recuperar os posts do usuário
-    const posts = await userService.getPostsByUserId(id);
+    const posts = await postService.getPostsByUserId(id);
 
     // Se a requisição falhar, retorna o erro
     if (posts.errors) {
@@ -48,7 +48,7 @@ export const createPost = createAsyncThunk(
   "post/createPost",
   async (post, thunkAPI) => {
     // Faz a requisição ao serviço, para recuperar os posts do usuário
-    const res = await userService.createPost(post);
+    const res = await postService.createPost(post);
 
     // Se a requisição falhar, retorna o erro
     if (res.errors) {
@@ -71,9 +71,9 @@ export const postSlice = createSlice({
     // Ação para resetar os estados do slice
     reset: (state) => {
       state.loading = false;
-      state.error = null;
+      state.error = false;
       state.success = false;
-      state.messageSuccess = [];
+      state.messageSuccess = false;
     },
   },
   extraReducers: (builder) => {
@@ -91,7 +91,6 @@ export const postSlice = createSlice({
         state.success = true; // Sucesso na requisição
         state.error = null; // Sem erro
         state.posts = action.payload; // Atualiza os posts com os dados retornados da API
-        state.messageSuccess = action.payload.message; // Atualiza a mensagem de sucesso com os dados retornados da API
       })
       .addCase(getPostsByUserId.rejected, (state, action) => {
         // Se a requisição falhar, atualiza os estados.
@@ -99,7 +98,6 @@ export const postSlice = createSlice({
         state.success = false; // Sem sucesso na requisição
         state.error = action.payload; // obtém os erros da requisição
         state.posts = []; // Limpa os posts
-        state.messageSuccess = []; // Limpa a mensagem de sucesso
       })
       // createPost
       .addCase(createPost.pending, (state) => {
@@ -113,15 +111,15 @@ export const postSlice = createSlice({
         state.loading = false; // Para o carregamento
         state.success = true; // Sucesso na requisição
         state.error = null; // Sem erro
-        state.messageSuccess = action.payload.message; // Atualiza a mensagem de sucesso com os dados retornados da API
+        state.posts.unshift(action.payload); // Atualiza os posts com os dados retornados da API
+        state.messageSuccess = true; // Atualiza a mensagem de sucesso com os dados retornados da API
       })
       .addCase(createPost.rejected, (state, action) => {
         // Se a requisição falhar, atualiza os estados.
         state.loading = false; // Para o carregamento
         state.success = false; // Sem sucesso na requisição
         state.error = action.payload; // obtém os erros da requisição
-        state.posts = []; // Limpa os posts
-        state.messageSuccess = []; // Limpa a mensagem de sucesso
+        state.messageSuccess = false; // Limpa a mensagem de sucesso
       });
   },
 });

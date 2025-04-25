@@ -41,7 +41,10 @@ const getPostsByUserId = async (id) => {
  * @returns {object} - Objeto com os dados do post
  */
 const createPost = async (post) => {
-  const config = requestConfig("POST", post);
+  // Recupera o token do localStorage
+  const token = JSON.parse(localStorage.getItem("access_token"));
+
+  const config = requestConfig("POST", post, token, true); // Configuração da requisição
 
   try {
     const res = await fetch(api + "/posts", config)
