@@ -32,9 +32,14 @@ const login = async (user) => {
     if (res.token) {
       localStorage.setItem("user", JSON.stringify(res.data));
       localStorage.setItem("access_token", JSON.stringify(res.token));
+      return res;
     }
 
-    return res;
+    if (res.errors) {
+      return res;
+    }
+
+    return { errors: ["Usuário ou senha inválidos"] };
   } catch (error) {
     console.log(error);
   }

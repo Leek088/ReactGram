@@ -10,7 +10,12 @@ import { useState, useEffect, useRef } from "react";
 import { BsFillEyeFill, BsPencilFill, BsXLg } from "react-icons/bs";
 // Redux
 import { useSelector, useDispatch } from "react-redux";
-import { getPostsByUserId, createPost, reset } from "../../slices/postSlice";
+import {
+  getPostsByUserId,
+  createPost,
+  updatePost,
+  reset,
+} from "../../slices/postSlice";
 import { getUser } from "../../slices/userSlice";
 // components
 import Message from "../../components/Message";
@@ -31,14 +36,17 @@ const Profile = () => {
   const [imagePost, setImagePost] = useState(null); // Imagem do post
 
   // states para o formulário de edição de post
+  const [idPost, setIdPost] = useState(""); // Id do post a ser editado
   const [editTitle, setEditTitle] = useState(""); // Titulo da foto editada
   const [editImage, setEditImage] = useState(""); // Imagem a ser editada
+  const [editBio, setEditBio] = useState(""); // Bio a ser editada
 
   const dispatch = useDispatch(); // Hook do redux para executar ações
 
-  const newPostForm = useRef(); // Referência para o formulário de nova foto
-  const editPostForm = useRef(); // Referência para o formulário de nova foto
+  const newPostForm = useRef(); // Referência para o formulário de novo post
+  const editPostForm = useRef(); // Referência para o formulário de edição do post
 
+  // Recupera o usuário pelo id
   useEffect(() => {
     // Recupera o usuário pelo id
     const fetchUser = async () => {
@@ -58,6 +66,46 @@ const Profile = () => {
     fetchPosts(); // Chama a função para recuperar os dados do usuário
   }, [dispatch, id]);
 
+  /**
+   * Gerencia a edição de um post
+   * Caso seja editar um post, mostra o formulário de edição
+   * Caso contrário, mostra o formulário de novo post
+   * Atribui os valores do post a serem editados
+   * @param {*} post - Os dados do post que está sendo editado.
+   */
+  const handleEdit = (post) => {
+    if (post) {
+      if (editPostForm.current.classList.contains("hide")) {
+        hideOrShowForms();
+      }
+
+      setEditImage(post.post_image);
+      setEditTitle(post.title);
+      setEditBio(post.bio);
+      setIdPost(post.id);
+    }
+  };
+
+  /**
+   * Esconde ou mostra os formulários de novo post e edição de post
+   */
+  const hideOrShowForms = () => {
+    // Verifica se o formulário de novo post contém a classe hide
+    if (newPostForm.current.classList.contains("hide")) {
+      newPostForm.current.classList.remove("hide"); // Mostra o formulário de novo post
+      editPostForm.current.classList.add("hide"); // Esconde o formulário de edição
+    } else {
+      // Se o formulário de edição contém a classe hide
+      newPostForm.current.classList.add("hide"); // Esconde o formulário de novo post
+      editPostForm.current.classList.remove("hide"); // Mostra o formulário de edição
+    }
+  };
+
+  /**
+   * Cria o método para um novo post
+   * Cria um novo objeto FormData com os dados do post
+   * Utiliza o serviço via post, createPost, para fazer a requisição à API
+   */
   const submitHandle = async (e) => {
     e.preventDefault(); // Previne o comportamento padrão do formulário
     const formData = new FormData(); // Cria um novo objeto FormData
@@ -73,11 +121,26 @@ const Profile = () => {
 
   const handleUpdate = async (e) => {
     e.preventDefault(); // Previne o comportamento padrão do formulário
+    const formData = new FormData(); // Cria um novo objeto FormData
+    formData.append("title", editTitle); // Adiciona o título ao objeto FormData
+    formData.append("bio", editBio); // Adiciona o título ao objeto FormData
+    dispatch(reset()); // Reseta os estados do userSlice
+    dispatch(updatePost({ id: idPost, data: formData })); // Chama a função para criar uma nova foto
   };
 
-  const handleCancelEdit = () => {};
+  /**
+   * cancela a edição do post
+   * Reseta os estados do post
+   * Esconde o formulário de edição
+   */
+  const handleCancelEdit = () => {
+    setEditTitle(""); // Reseta o título do post
+    setEditBio(""); // Reseta a biografia do post
+    setEditImage(""); // Reseta a imagem do post
+    hideOrShowForms(); // Esconde o formulário de edição
+  };
 
-  // Recupera a imagem do input, sempre que for modificada
+  // Recupera a imagem da criação do post, sempre que for modificada
   const handleFile = (e) => {
     const img = e.target.files[0]; // Pega a imagem do input
     setImagePost(img); // Atualiza a imagem de preview
@@ -109,9 +172,10 @@ const Profile = () => {
           </>
         )}
       </div>
-      {user && id == userLogged.id && (
+      {user && id == user.id && (
         <>
-          <div className="new-photo" ref={newPostForm}>
+          {/* formulário de inclusão de novo post */}
+          <div className="new-post" ref={newPostForm}>
             <h3>Compartilhe algum momento seu:</h3>
             <form onSubmit={submitHandle}>
               <label>
@@ -140,17 +204,30 @@ const Profile = () => {
               {loading && <input type="submit" disabled value="Aguarde..." />}
             </form>
           </div>
-          <div className="edit-photo hide" ref={editPostForm}>
+          {/* forumlário de inclusão para edição de post */}
+          <div className="edit-post hide" ref={editPostForm}>
             <p>Editando:</p>
             {editImage && (
-              <img src={`${uploads}/photos/${editImage}`} alt={editTitle} />
+              <img src={`${apiImagePost}/${editImage}`} alt={editTitle} />
             )}
             <form onSubmit={handleUpdate}>
-              <input
-                type="text"
-                onChange={(e) => setEditTitle(e.target.value)}
-                value={editTitle || ""}
-              />
+              <label>
+                <span>Titulo para a foto:</span>
+                <input
+                  type="text"
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  value={editTitle || ""}
+                />
+              </label>
+              <label>
+                <span>Biografia para a foto:</span>
+                <input
+                  type="text"
+                  placeholder="Insira uma descrição"
+                  onChange={(e) => setEditBio(e.target.value)}
+                  value={editBio || ""}
+                />
+              </label>
               <input type="submit" value="Atualizar" />
               <button className="cancel-btn" onClick={handleCancelEdit}>
                 Cancelar edição
@@ -166,9 +243,10 @@ const Profile = () => {
           )}
         </>
       )}
+      {/* Lista de posts do usuário selecionado  */}
       <div className="user-photos">
         <h2>Fotos publicadas:</h2>
-        <div className="photos-container">
+        <div className="posts-container">
           {posts &&
             posts.map((post) => (
               <div className="post" key={post.id}>
@@ -187,7 +265,7 @@ const Profile = () => {
                     <BsXLg onClick={() => handleDelete(post.id)} />
                   </div>
                 ) : (
-                  <Link to={`/posts/${post.id}`}>
+                  <Link to={`/users/${id}/posts`}>
                     <BsFillEyeFill />
                   </Link>
                 )}
