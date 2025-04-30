@@ -70,8 +70,7 @@ const EditProfile = () => {
     e.preventDefault(); // Cancela o envio do formulário
 
     const formData = new FormData(); // Cria um novo objeto FormData
-    // formData.append("_method", "PUT"); // Adiciona o método PUT ao FormData
-    formData.append("_method", "PUT"); // Adiciona o nome ao FormData
+    formData.append("_method", "PUT"); // Adiciona o metodo de inserção ao objeto FormData
     formData.append("name", name); // Adiciona o nome ao FormData
     // se o usuário digitar uma nova senha, adiciona ao FormData
     if (password) {

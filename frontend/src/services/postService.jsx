@@ -115,11 +115,41 @@ const updatePost = async (id, post) => {
   }
 };
 
+/**
+ * Deleta um post pelo id
+ * A requisição é feita com fetch - método DELETE, sem body, com o token de autenticação
+ * @param {object} id - id do post para deletar
+ */
+const deletePost = async (id) => {
+  // Recupera o token do localStorage
+  const token = JSON.parse(localStorage.getItem("access_token"));
+
+  // Recupera a configuração da requisição
+  const config = requestConfig("DELETE", null, token, null);
+
+  try {
+    // Faz a requisição à API
+    const res = await fetch(api + "/posts/" + id, config)
+      // Se a requisição for bem sucedida, retorna o objeto
+      .then((res) => res.json())
+      // Se a requisição falhar, retorna o erro
+      .catch((err) => err);
+
+    // retorna o resultado da requisição
+    return res;
+  } catch (error) {
+    // Se ocorrer um erro, imprime o erro no console
+    console.log(error);
+  }
+};
+
 //Constante com os métodos do serviço de post
 const postService = {
   getPostsByUserId,
   createPost,
   getPostsById,
+  updatePost,
+  deletePost,
 };
 
 // Exporta os serviços de post

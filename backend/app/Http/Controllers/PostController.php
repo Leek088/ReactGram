@@ -88,7 +88,7 @@ class PostController extends Controller
         $validadeData = $request->validate([
             'title' => 'required|string|max:255',
             'bio' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,webp',
             'user_id' => 'required|exists:users,id',
         ]);
 
@@ -193,7 +193,9 @@ class PostController extends Controller
             // Verifica se o post existe
             if (!$post) {
                 return response()->json([
-                    'message' => 'Post not found',
+                    'errors' => [
+                        'message' => 'Post not found',
+                    ],
                 ], 404);
             }
 

@@ -14,6 +14,7 @@ import {
   getPostsByUserId,
   createPost,
   updatePost,
+  deletePost,
   reset,
 } from "../../slices/postSlice";
 import { getUser } from "../../slices/userSlice";
@@ -62,9 +63,10 @@ const Profile = () => {
       dispatch(reset()); // Reseta os estados do userSlice
       dispatch(getPostsByUserId(id)); // Recupera os dados do usuário
     };
-
-    fetchPosts(); // Chama a função para recuperar os dados do usuário
-  }, [dispatch, id]);
+    if (posts.length == 0) {
+      fetchPosts(); // Chama a função para recuperar os dados do usuário
+    }
+  }, [dispatch, id, posts]);
 
   /**
    * Gerencia a edição de um post
@@ -119,13 +121,27 @@ const Profile = () => {
     dispatch(createPost(formData)); // Chama a função para criar uma nova foto
   };
 
+  /**
+   * Atualiza o post selecionado
+   * Cria um novo objeto FormData com os dados do post
+   * Utiliza o serviço via post, updatePost, para fazer a requisição à API
+   */
   const handleUpdate = async (e) => {
     e.preventDefault(); // Previne o comportamento padrão do formulário
     const formData = new FormData(); // Cria um novo objeto FormData
+    formData.append("_method", "PUT"); // Adiciona o metodo de inserção ao objeto FormData
     formData.append("title", editTitle); // Adiciona o título ao objeto FormData
     formData.append("bio", editBio); // Adiciona o título ao objeto FormData
     dispatch(reset()); // Reseta os estados do userSlice
     dispatch(updatePost({ id: idPost, data: formData })); // Chama a função para criar uma nova foto
+  };
+
+  /**
+   * Deleta o post selecionado
+   */
+  const handleDelete = async (id) => {
+    dispatch(reset()); // Reseta os estados do userSlice
+    dispatch(deletePost(id)); // Chama a função para deletar o post
   };
 
   /**
@@ -237,7 +253,7 @@ const Profile = () => {
           {error && <Message messages={error} type="error" />}
           {messageSuccess && (
             <Message
-              messages={["Postagem realizada com sucesso."]}
+              messages={["Processo realizado com sucesso."]}
               type="success"
             />
           )}
@@ -247,6 +263,7 @@ const Profile = () => {
       <div className="user-photos">
         <h2>Fotos publicadas:</h2>
         <div className="posts-container">
+          {posts.length === 0 && <p>Ainda não há fotos publicadas...</p>}
           {posts &&
             posts.map((post) => (
               <div className="post" key={post.id}>
@@ -271,7 +288,6 @@ const Profile = () => {
                 )}
               </div>
             ))}
-          {posts.length === 0 && <p>Ainda não há fotos publicadas...</p>}
         </div>
       </div>
     </div>
