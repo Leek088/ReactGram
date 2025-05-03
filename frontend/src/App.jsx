@@ -12,7 +12,9 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 // Hooks
 import { useAuth } from "./hooks/useAuth";
+// Pages
 import Profile from "./pages/Profile/Profile";
+import Post from "./pages/Post/Post";
 
 function App() {
   const { auth, loading } = useAuth();
@@ -38,6 +40,10 @@ function App() {
             <Route
               path="/users/:id/posts"
               element={auth ? <Profile /> : <Navigate to="/login" />}
+            />
+            <Route
+              path="/posts/:id"
+              element={auth ? <Post /> : <Navigate to="/login" />}
             />
             <Route
               path="/login"

@@ -25,6 +25,6 @@ Route::controller(PostController::class)->group(function (): void {
     Route::put('/posts/{id}', 'update')->middleware('auth:sanctum'); // Atualiza um post
     Route::delete('/posts/{id}', 'destroy')->middleware('auth:sanctum'); // Deleta um post
     Route::put('/posts/{id}/like', 'likePost')->middleware('auth:sanctum'); // Adiciona um like a um post
-    Route::put('/posts/{id}/comment', 'commentPost')->middleware('auth:sanctum'); // Adiciona um like a um post
+    Route::put('/posts/{id}/comment', 'commentPost')->middleware('auth:sanctum'); // Adiciona um comentário a um post
     Route::get('/posts/search/{query}', 'searchPost')->middleware('auth:sanctum'); // Busca posts por título
 });

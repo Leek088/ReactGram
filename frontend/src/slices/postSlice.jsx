@@ -6,7 +6,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // Estado inicial do slice de usuário
 const initialState = {
   posts: [],
-  post: null,
+  post: {},
   error: false,
   success: false,
   messageSuccess: false,
@@ -39,25 +39,25 @@ export const getPostsByUserId = createAsyncThunk(
 
 /**
  * Cria o método para recuperar o post via ID
- * Utiliza o serviço via get, getPostsById, para fazer a requisição à API
+ * Utiliza o serviço via get, getPostById, para fazer a requisição à API
  * Em caso de erro, retorna o erro
  * @param {string} id - ID do post
  * @returns {object} - Objeto com os dados do post
  * @throws {object} - Objeto com os erros da requisição
  */
-export const getPostsById = createAsyncThunk(
-  "post/getPostsById",
+export const getPostById = createAsyncThunk(
+  "post/getPostById",
   async (id, thunkAPI) => {
     // Faz a requisição ao serviço, para recuperar os posts do usuário
-    const posts = await postService.getPostsByUserId(id);
+    const post = await postService.getPostById(id);
 
     // Se a requisição falhar, retorna o erro
-    if (posts.errors) {
-      return thunkAPI.rejectWithValue(Object.values(posts.errors)); // Retorna o erro
+    if (post.errors) {
+      return thunkAPI.rejectWithValue(Object.values(post.errors)); // Retorna o erro
     }
 
     // Se a requisição for bem sucedida, retorna o objeto com os dados do usuário
-    return posts.data;
+    return post.data;
   }
 );
 
@@ -95,6 +95,27 @@ export const updatePost = createAsyncThunk(
   async ({ id, data }, thunkAPI) => {
     // Faz a requisição ao serviço, para atualizar os dados do post
     const post = await postService.updatePost(id, data);
+
+    // Se a requisição falhar, retorna o erro
+    if (post.errors) {
+      return thunkAPI.rejectWithValue(Object.values(post.errors)); // Retorna o erro
+    }
+
+    // Se a requisição for bem sucedida, retorna o objeto com os dados do post
+    return post.data;
+  }
+);
+
+/**
+ * Cria o método para inserir um comentário ao post do usuário, via id do post
+ * Utiliza o serviço via post, insertCommentPost, para fazer a requisição à API
+ * Em caso de erro, retorna o erro
+ */
+export const insertCommentPost = createAsyncThunk(
+  "post/insertCommentPost",
+  async ({ id, data }, thunkAPI) => {
+    // Faz a requisição ao serviço, para atualizar os dados do post
+    const post = await postService.insertCommentPost(id, data);
 
     // Se a requisição falhar, retorna o erro
     if (post.errors) {
@@ -188,26 +209,26 @@ export const postSlice = createSlice({
         state.error = action.payload; // obtém os erros da requisição
         state.messageSuccess = false; // Limpa a mensagem de sucesso
       })
-      // getPostsById
-      .addCase(getPostsById.pending, (state) => {
+      // getPostById
+      .addCase(getPostById.pending, (state) => {
         // No ato da requisição, reseta os estados.
         state.loading = true; // carregando
         state.success = false; // sem finalizar
         state.error = null; // Sem erro
       })
-      .addCase(getPostsById.fulfilled, (state, action) => {
+      .addCase(getPostById.fulfilled, (state, action) => {
         // Se a requisição for bem sucedida, atualiza os estados.
         state.loading = false; // Para o carregamento
         state.success = true; // Sucesso na requisição
         state.error = null; // Sem erro
         state.post = action.payload; // Atualiza os posts com os dados retornados da API
       })
-      .addCase(getPostsById.rejected, (state, action) => {
+      .addCase(getPostById.rejected, (state, action) => {
         // Se a requisição falhar, atualiza os estados.
         state.loading = false; // Para o carregamento
         state.success = false; // Sem sucesso na requisição
         state.error = action.payload; // obtém os erros da requisição
-        state.post = null; // Limpa os posts
+        state.post = {}; // Limpa os posts
       })
       // updatePost
       .addCase(updatePost.pending, (state) => {
@@ -254,6 +275,26 @@ export const postSlice = createSlice({
         state.success = false; // Sem sucesso na requisição
         state.error = action.payload; // obtém os erros da requisição
         state.messageSuccess = false; // Sem mensagem de sucesso.
+      })
+      // insertCommentPost
+      .addCase(insertCommentPost.pending, (state) => {
+        // No ato da requisição, reseta os estados.
+        state.loading = true; // carregando
+        state.success = false; // sem finalizar
+        state.error = null; // Sem erro
+      })
+      .addCase(insertCommentPost.fulfilled, (state, action) => {
+        // Se a requisição for bem sucedida, atualiza os estados.
+        state.loading = false; // Para o carregamento
+        state.success = true; // Sucesso na requisição
+        state.error = null; // Sem erro
+        state.post = action.payload; // Atualiza o post com os dados atuais
+      })
+      .addCase(insertCommentPost.rejected, (state, action) => {
+        // Se a requisição falhar, atualiza os estados.
+        state.loading = false; // Para o carregamento
+        state.success = false; // Sem sucesso na requisição
+        state.error = action.payload; // obtém os erros da requisição
       });
   },
 });

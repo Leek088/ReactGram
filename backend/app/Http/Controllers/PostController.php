@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\PostResource;
 use App\Models\Post;
+use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -58,9 +59,14 @@ class PostController extends Controller
             // Verifica se o post existe
             if (!$post) {
                 return response()->json([
-                    'message' => 'Post not found',
+                    'errors' => ['message' => 'Post not found',]
                 ], 404);
             }
+
+            // Recupera o usuario do post
+            $user = User::find($post->user_id);
+
+            $post['user_name'] = $user->name;
 
             // Retorna a resposta com o post
             return response()->json([
@@ -151,10 +157,16 @@ class PostController extends Controller
             // Verifica se o post existe
             if (!$post) {
                 return response()->json([
-                    'message' => 'Post not found',
+                    'errors' => [
+                        'message' => 'Post not found',
+                    ]
                 ], 404);
             }
 
+            /**
+             * Código retirado.
+             * Regra de negócio: Não atualiza-se mais a imagem do post
+             */
             // Verifica se o arquivo de imagem foi recebido
             // if ($request->file('image')) {
             //     //Recupera o nome da imagem
@@ -279,7 +291,7 @@ class PostController extends Controller
     {
         // Valida os dados da requisição
         $validateData = $request->validate([
-            'comment' => 'required|string|max:255',
+            'comment' => 'required|string',
         ]);
 
         try {
@@ -289,7 +301,9 @@ class PostController extends Controller
             // Verifica se o post existe
             if (!$post) {
                 return response()->json([
-                    'message' => 'Post not found',
+                    'errors' => [
+                        'message' => 'Post not found',
+                    ]
                 ], 404);
             }
 
@@ -301,7 +315,7 @@ class PostController extends Controller
                 'id' => Str::random(10),
                 'user_id' => auth()->user()->id,
                 'user_name' => auth()->user()->name,
-                'user_image' => auth()->user()->image,
+                'user_image' => auth()->user()->profile_picture,
                 'comment' => $validateData['comment'],
             ];
 
@@ -369,8 +383,11 @@ class PostController extends Controller
 
         // Retorna a resposta de erro
         return response()->json([
-            'message' => 'Internal server error.',
-            'error' => 'Ocorreu um erro ao processar sua solicitação.'
+            'errors' =>
+                [
+                    'message' => 'Internal server error.',
+                    'error' => 'Ocorreu um erro ao processar sua solicitação.'
+                ]
         ], 500);
     }
 

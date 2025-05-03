@@ -22,6 +22,7 @@ class PostResource extends JsonResource
             'likes' => $this->likes,
             'comments' => $this->comments,
             'user_id' => $this->user_id,
+            'user_name' => $this->user_name ?: null
         ];
     }
 }

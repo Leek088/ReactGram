@@ -3,7 +3,7 @@ import "./Profile.css";
 // Config
 import { apiImagePost, apiImageUser } from "../../utils/config";
 // Router
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 // React
 import { useState, useEffect, useRef } from "react";
 // Icons
@@ -27,6 +27,9 @@ const Profile = () => {
 
   // states iniciais do slice user
   const { user } = useSelector((state) => state.user);
+
+  const userLooged = JSON.parse(localStorage.getItem("user"));
+
   // states iniciais do slice post
   const { posts, error, messageSuccess, loading } = useSelector(
     (state) => state.post
@@ -63,10 +66,9 @@ const Profile = () => {
       dispatch(reset()); // Reseta os estados do userSlice
       dispatch(getPostsByUserId(id)); // Recupera os dados do usuário
     };
-    if (posts.length == 0) {
-      fetchPosts(); // Chama a função para recuperar os dados do usuário
-    }
-  }, [dispatch, id, posts]);
+
+    fetchPosts(); // Chama a função para recuperar os dados dos posts
+  }, [dispatch, id, posts.length]);
 
   /**
    * Gerencia a edição de um post
@@ -150,10 +152,10 @@ const Profile = () => {
    * Esconde o formulário de edição
    */
   const handleCancelEdit = () => {
+    hideOrShowForms(); // Esconde o formulário de edição
     setEditTitle(""); // Reseta o título do post
     setEditBio(""); // Reseta a biografia do post
     setEditImage(""); // Reseta a imagem do post
-    hideOrShowForms(); // Esconde o formulário de edição
   };
 
   // Recupera a imagem da criação do post, sempre que for modificada
@@ -188,7 +190,7 @@ const Profile = () => {
           </>
         )}
       </div>
-      {user && id == user.id && (
+      {userLooged && id == userLooged.id && (
         <>
           {/* formulário de inclusão de novo post */}
           <div className="new-post" ref={newPostForm}>
@@ -245,9 +247,12 @@ const Profile = () => {
                 />
               </label>
               <input type="submit" value="Atualizar" />
-              <button className="cancel-btn" onClick={handleCancelEdit}>
-                Cancelar edição
-              </button>
+              <input
+                type="button"
+                className="btn cancel-btn"
+                value="Cancelar edição"
+                onClick={handleCancelEdit}
+              />
             </form>
           </div>
           {error && <Message messages={error} type="error" />}
@@ -282,7 +287,7 @@ const Profile = () => {
                     <BsXLg onClick={() => handleDelete(post.id)} />
                   </div>
                 ) : (
-                  <Link to={`/users/${id}/posts`}>
+                  <Link to={`/posts/${post.id}`}>
                     <BsFillEyeFill />
                   </Link>
                 )}
