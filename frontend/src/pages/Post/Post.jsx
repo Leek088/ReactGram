@@ -11,10 +11,17 @@ import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams } from "react-router-dom";
 // Redux
-import { getPostById, reset, insertCommentPost } from "../../slices/postSlice";
+import {
+  getPostById,
+  reset,
+  insertCommentPost,
+  insertLikePost,
+} from "../../slices/postSlice";
+import LikeContainer from "../../components/LikeContainer";
 
 const Post = () => {
   const { id } = useParams(); // Pega o id do post da URL
+  const idUserLogged = JSON.parse(localStorage.getItem("user")).id;
   const dispatch = useDispatch(); // Cria o dispatch para executar os métodos do slice
   const { post, loading, error } = useSelector((state) => state.post); // Pega os estados globais do slice
   const [commentText, setCommentText] = useState();
@@ -45,6 +52,15 @@ const Post = () => {
     setCommentText("");
   };
 
+  // Insert a like
+  const handleLike = () => {
+    // Cria o methodo do like
+    const formData = new FormData(); // Cria um novo objeto FormData
+    formData.append("_method", "PUT"); // Adiciona o metodo de inserção ao objeto FormData
+    dispatch(reset()); // Reseta os estados do userSlice
+    dispatch(insertLikePost({ id, data: formData })); // Chama a função para criar o like
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -52,7 +68,11 @@ const Post = () => {
   return (
     <div id="photo">
       <PostItem post={post} />
-      {/* <LikeContainer photo={photo} user={user} handleLike={handleLike} /> */}
+      <LikeContainer
+        post={post}
+        userId={idUserLogged}
+        handleLike={handleLike}
+      />
       <div className="message-container">
         {error && <Message msg={error} type="error" />}
         {/* {message && <Message msg={message} type="success" />} */}

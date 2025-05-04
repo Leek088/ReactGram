@@ -243,7 +243,9 @@ class PostController extends Controller
             // Verifica se o post existe
             if (!$post) {
                 return response()->json([
-                    'message' => 'Post not found',
+                    'errors' => [
+                        'message' => 'Post not found',
+                    ]
                 ], 404);
             }
 

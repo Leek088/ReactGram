@@ -128,6 +128,27 @@ export const insertCommentPost = createAsyncThunk(
 );
 
 /**
+ * Cria o método para inserir um like ao post do usuário, via id do post
+ * Utiliza o serviço via post, insertLikePost, para fazer a requisição à API
+ * Em caso de erro, retorna o erro
+ */
+export const insertLikePost = createAsyncThunk(
+  "post/insertLikePost",
+  async ({ id, data }, thunkAPI) => {
+    // Faz a requisição ao serviço, para inserir like ao post
+    const post = await postService.insertLikePost(id, data);
+
+    // Se a requisição falhar, retorna o erro
+    if (post.errors) {
+      return thunkAPI.rejectWithValue(Object.values(post.errors)); // Retorna o erro
+    }
+
+    // Se a requisição for bem sucedida, retorna o objeto com os dados do post
+    return post.data;
+  }
+);
+
+/**
  * Cria o método para deletar o post do usuário, via id do post
  * Utiliza o serviço via delete, deletePost, para fazer a requisição à API
  * Em caso de erro, retorna o erro
@@ -291,6 +312,26 @@ export const postSlice = createSlice({
         state.post = action.payload; // Atualiza o post com os dados atuais
       })
       .addCase(insertCommentPost.rejected, (state, action) => {
+        // Se a requisição falhar, atualiza os estados.
+        state.loading = false; // Para o carregamento
+        state.success = false; // Sem sucesso na requisição
+        state.error = action.payload; // obtém os erros da requisição
+      })
+      // insertLikePost
+      .addCase(insertLikePost.pending, (state) => {
+        // No ato da requisição, reseta os estados.
+        state.loading = true; // carregando
+        state.success = false; // sem finalizar
+        state.error = null; // Sem erro
+      })
+      .addCase(insertLikePost.fulfilled, (state, action) => {
+        // Se a requisição for bem sucedida, atualiza os estados.
+        state.loading = false; // Para o carregamento
+        state.success = true; // Sucesso na requisição
+        state.error = null; // Sem erro
+        state.post = action.payload; // Atualiza o post com os dados atuais
+      })
+      .addCase(insertLikePost.rejected, (state, action) => {
         // Se a requisição falhar, atualiza os estados.
         state.loading = false; // Para o carregamento
         state.success = false; // Sem sucesso na requisição

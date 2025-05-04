@@ -146,6 +146,35 @@ const insertCommentPost = async (id, comment) => {
 };
 
 /**
+ * Insere um like ao post
+ * A requisição é feita com fetch - método POST, com o body do post e o token de autenticação
+ * @param id - Id do post para ser dado like.
+ * @returns {object} - Objeto com os dados do post atualizado
+ */
+const insertLikePost = async (id, post) => {
+  // Recupera o token do localStorage
+  const token = JSON.parse(localStorage.getItem("access_token"));
+
+  // Recupera a configuração da requisição
+  const config = requestConfig("POST", post, token, true);
+
+  try {
+    // Faz a requisição à API
+    const res = await fetch(api + "/posts/" + id + "/like", config)
+      // Se a requisição for bem sucedida, retorna o objeto
+      .then((res) => res.json())
+      // Se a requisição falhar, retorna o erro
+      .catch((err) => err);
+
+    // retorna o resultado da requisição
+    return res;
+  } catch (error) {
+    // Se ocorrer um erro, imprime o erro no console
+    console.log(error);
+  }
+};
+
+/**
  * Deleta um post pelo id
  * A requisição é feita com fetch - método DELETE, sem body, com o token de autenticação
  * @param {object} id - id do post para deletar
@@ -180,6 +209,7 @@ const postService = {
   getPostById,
   updatePost,
   insertCommentPost,
+  insertLikePost,
   deletePost,
 };
 
